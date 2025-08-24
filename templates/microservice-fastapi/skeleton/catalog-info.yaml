@@ -1,0 +1,14 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: {{ name }}
+  description: FastAPI service scaffolded by Backstage
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+    github.com/project-slug: {{ ghOrg }}/{{ name }}
+    argocd/app-name: {{ name }}-app
+spec:
+  type: service
+  owner: {{ owner }}
+  system: {{ system }}
+  lifecycle: experimental
