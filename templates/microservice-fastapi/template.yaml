@@ -34,7 +34,7 @@ spec:
         ghOrg:
           type: string
           title: GitHub org/user to create repo under (e.g. your-gh-user)
-          default: YOUR_GH_ORG
+          default: vpydikondala
 
   steps:
     - id: fetch

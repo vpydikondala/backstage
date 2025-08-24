@@ -28,21 +28,21 @@ data:
           host: postgresql.backstage.svc.cluster.local
           port: 5432
           user: backstage
-          password: BACKSTAGE_DB_PASSWORD
+          password: ${BACKSTAGE_DB_PASSWORD}
           database: backstage
 
     integrations:
       github:
         - host: github.com
-          token: GITHUB_PERSONAL_ACCESS_TOKEN
+          token: ${GITHUB_PERSONAL_ACCESS_TOKEN}
 
     auth:
       environment: development
       providers:
         github:
           development:
-            clientId: GITHUB_OAUTH_CLIENT_ID
-            clientSecret: GITHUB_OAUTH_CLIENT_SECRET
+            clientId: ${GITHUB_OAUTH_CLIENT_ID}
+            clientSecret: ${GITHUB_OAUTH_CLIENT_SECRET}
 
     techdocs:
       builder: 'local'
@@ -54,7 +54,7 @@ data:
         - allow: [Component, API, Location, Resource, System, Domain, Group, User]
       locations:
         - type: url
-          target: https://github.com/YOUR_GH_ORG?type=all
+          target: https://github.com/vpydikondala?type=all
           rules:
             - allow: [Component, System, Resource, API]
         - type: file
@@ -116,10 +116,10 @@ spec:
           image: backstage-poc:latest
           imagePullPolicy: IfNotPresent
           env:
-            - name: BACKSTAGE_DB_PASSWORD
-              value: "BACKSTAGE_DB_PASSWORD"
+            - name: ${BACKSTAGE_DB_PASSWORD}
+              value: "${BACKSTAGE_DB_PASSWORD}"
             - name: ARGOCD_TOKEN
-              value: "REPLACE_WITH_ARGOCD_READONLY_TOKEN"
+              value: "${ARGOCD_TOKEN}"
           volumeMounts:
             - name: config
               mountPath: /app/app-config.yaml
