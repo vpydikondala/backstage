@@ -10,7 +10,8 @@ image:
   tag: latest
   pullPolicy: IfNotPresent
 
-imagePullSecrets: []
+imagePullSecrets: 
+  - name: ghcr-secret
 
 service:
   port: 80
