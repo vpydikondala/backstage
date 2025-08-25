@@ -1,76 +1,39 @@
+# templates/microservice-fastapi/skeleton/template.yaml
 apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
   name: microservice-fastapi
-  title: Microservice (FastAPI + Helm + Argo CD)
-  description: Scaffold a FastAPI service with Dockerfile, Helm chart, Argo CD app, TechDocs, and CI for GHCR.
+  title: FastAPI Microservice Template
+  description: Scaffold a FastAPI app with Helm, Docker, ArgoCD, GitHub Actions
 spec:
-  owner: platform-team
+  owner: user:guest
   type: service
-
   parameters:
-    - title: Service Info
-      required: [name, owner, system, host, namespace, ghOrg]
+    - title: Provide service metadata
+      required: [name]
       properties:
         name:
           type: string
-          title: Service name (kebab-case)
-          pattern: '^[a-z0-9-]+$'
-        owner:
-          type: string
-          title: Owner (Backstage Group, e.g. team-product)
-        system:
-          type: string
-          title: System (Backstage System)
-          default: core
-        namespace:
-          type: string
-          title: Kubernetes namespace
-          default: default
-        host:
-          type: string
-          title: Ingress host (e.g. svc.local)
-          default: product.local
-        ghOrg:
-          type: string
-          title: GitHub org/user to create repo under (e.g. your-gh-user)
-          default: vpydikondala
-
+          title: Name
+          description: The name of the microservice
   steps:
-    - id: fetch
-      name: Fetch template
+    - id: fetch-base
+      name: Fetch Skeleton
       action: fetch:template
       input:
-        url: ./skeleton
+        url: ./templates/microservice-fastapi/skeleton
         values:
-          name: '{{ parameters.name }}'
-          owner: '{{ parameters.owner }}'
-          system: '{{ parameters.system }}'
-          namespace: '{{ parameters.namespace }}'
-          host: '{{ parameters.host }}'
-          ghOrg: '{{ parameters.ghOrg }}'
-
+          name: ${{ parameters.name }}
     - id: publish
       name: Publish to GitHub
       action: publish:github
       input:
-        allowedHosts: ['github.com']
-        description: 'Microservice scaffolded by Backstage'
-        repoUrl: 'github.com?owner={{ parameters.ghOrg }}&repo={{ parameters.name }}'
+        repoUrl: github.com?repo=${{ parameters.name }}&owner=<your-org>
         defaultBranch: main
-        protectDefaultBranch: false
-
+        description: Scaffolding a FastAPI microservice
     - id: register
-      name: Register in Backstage catalog
+      name: Register with Backstage
       action: catalog:register
       input:
-        repoContentsUrl: '{{ steps.publish.output.repoContentsUrl }}'
-        catalogInfoPath: '/catalog-info.yaml'
-
-  output:
-    links:
-      - title: Open Repository
-        url: '{{ steps.publish.output.remoteUrl }}'
-      - title: Open in Backstage
-        icon: catalog
-        entityRef: 'component:{{ parameters.name }}'
+        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
+        catalogInfoPath: '/environments/dev/argocd/catalog-info.yaml'

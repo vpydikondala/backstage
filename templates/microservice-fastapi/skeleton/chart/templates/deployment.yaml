@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "{{ name }}.fullname" . | default .Chart.Name }}
+  name: {{ include "backstage.fullname" . | default .Chart.Name }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
@@ -22,4 +22,20 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.service.targetPort }}
-          args: ["uvicorn","app.main:app","--host","0.0.0.0","--port","{{ .Values.service.targetPort }}"]
+          args:
+            - uvicorn
+            - app.main:app
+            - --host
+            - 0.0.0.0
+            - --port
+            - "{{ .Values.service.targetPort }}"
+          env:
+            {{- range .Values.backstage.extraEnvVars }}
+            - name: {{ .name }}
+              {{- if .value }}
+              value: {{ .value | quote }}
+              {{- else if .valueFrom }}
+              valueFrom:
+                {{ toYaml .valueFrom | nindent 16 }}
+              {{- end }}
+            {{- end }}

@@ -1,0 +1,31 @@
+# Core app dependencies
+fastapi
+uvicorn[standard]
+
+# For HTTP requests
+httpx
+requests
+
+# For environment variable support
+python-dotenv
+
+# For working with data validation and parsing
+pydantic
+
+# For async support with external APIs (optional but recommended)
+aiohttp
+
+# For Kubernetes API access (optional, if directly accessing k8s resources)
+kubernetes
+
+# If using PostgreSQL (used in Backstage app-config.yaml)
+psycopg2-binary
+
+# If using a DB abstraction layer or ORM
+SQLAlchemy
+
+# For YAML file parsing (e.g., Argo CD or Backstage YAMLs)
+pyyaml
+
+# For handling JWT tokens if needed (auth, Argo CD token etc.)
+PyJWT

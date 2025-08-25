@@ -60,6 +60,15 @@ kubernetes:
           skipTLSVerify: true
   customResources: []
 
+proxy:
+  '/argocd/api':
+    target: http://argocd-server.argocd.svc.cluster.local/api/v1/
+    changeOrigin: true
+    secure: false
+    headers:
+      Cookie:
+        $env: token
+
 argocd:
   baseUrl: http://argocd-server.argocd.svc.cluster.local
   appLocatorMethods:

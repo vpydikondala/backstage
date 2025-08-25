@@ -1,14 +1,16 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: {{ name }}
-  description: FastAPI service scaffolded by Backstage
-  annotations:
-    backstage.io/techdocs-ref: dir:.
-    github.com/project-slug: {{ ghOrg }}/{{ name }}
-    argocd/app-name: {{ name }}-app
+  name: microservice-fastapi
+  description: FastAPI microservice for Backstage IDP PoC
 spec:
   type: service
-  owner: {{ owner }}
-  system: {{ system }}
   lifecycle: experimental
+  owner: team@example.com
+  system: backstage-idp-poc
+  providesApis:
+    - my-api
+  consumesApis: []
+  dependsOn:
+    - resource:postgresql
+  implementsApis: []
