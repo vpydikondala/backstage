@@ -37,26 +37,26 @@ backstage:
     - name: BACKSTAGE_DB_PASSWORD
       valueFrom:
         secretKeyRef:
-          name: backstage-db-secret
+          name: postgresql
           key: password
 
     - name: GITHUB_PERSONAL_ACCESS_TOKEN
       valueFrom:
         secretKeyRef:
-          name: github-token-secret
+          name: github-pat
           key: token
 
     - name: GITHUB_OAUTH_CLIENT_ID
       valueFrom:
         secretKeyRef:
-          name: github-oauth-secret
-          key: client-id
+          name: github-oauth
+          key: clientId
 
     - name: GITHUB_OAUTH_CLIENT_SECRET
       valueFrom:
         secretKeyRef:
-          name: github-oauth-secret
-          key: client-secret
+          name: github-oauth
+          key: clientSecret
 
 appConfig:
   app:
@@ -70,5 +70,5 @@ appConfig:
       connection:
         host: postgresql.backstage.svc.cluster.local
         user: backstage
-        password: ${BACKSTAGE_DB_PASSWORD}
+        password: postgresql
         database: backstage
