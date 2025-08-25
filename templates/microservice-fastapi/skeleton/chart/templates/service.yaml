@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Chart.Name }}
+  name: {{ include "backstage.fullname" . }}
 spec:
   selector:
-    app: {{ .Chart.Name }}
+    app: {{ include "backstage.name" . }}
   ports:
     - name: http
       port: {{ .Values.service.port }}
