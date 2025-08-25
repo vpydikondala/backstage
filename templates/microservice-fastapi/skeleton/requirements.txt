@@ -1,8 +1,8 @@
-# Core app dependencies
+# Core FastAPI dependencies
 fastapi
 uvicorn[standard]
 
-# For HTTP requests
+# HTTP requests (httpx for async requests, requests for sync)
 httpx
 requests
 
@@ -12,20 +12,32 @@ python-dotenv
 # For working with data validation and parsing
 pydantic
 
-# For async support with external APIs (optional but recommended)
+# Async support with external APIs
 aiohttp
 
-# For Kubernetes API access (optional, if directly accessing k8s resources)
+# Kubernetes API client (for interacting with Kubernetes resources)
 kubernetes
 
-# If using PostgreSQL (used in Backstage app-config.yaml)
+# PostgreSQL support (used for database connections)
 psycopg2-binary
 
-# If using a DB abstraction layer or ORM
+# SQLAlchemy ORM for working with databases
 SQLAlchemy
 
-# For YAML file parsing (e.g., Argo CD or Backstage YAMLs)
+# For working with YAML (for configurations, etc.)
 pyyaml
 
-# For handling JWT tokens if needed (auth, Argo CD token etc.)
+# For JWT token handling (auth, token validation)
 PyJWT
+
+# For production environments, often you'd want a WSGI server (optional if you are using `uvicorn`)
+gunicorn
+
+# Optional - if your app needs CORS
+starlette
+
+# Optional - for background tasks handling
+celery
+
+# For logging (optional, might be included for better logging management)
+loguru
