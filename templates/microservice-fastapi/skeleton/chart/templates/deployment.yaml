@@ -34,22 +34,41 @@ spec:
             httpGet:
               path: /health
               port: 7007
-            initialDelaySeconds: 30  # Delay before starting the probe
-            periodSeconds: 10  # Frequency of the probe
-            timeoutSeconds: 5  # Timeout for each probe
-            failureThreshold: 3  # Number of failed probes before the container is considered unhealthy
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
           readinessProbe:
             httpGet:
               path: /health
               port: 7007
-            initialDelaySeconds: 5  # Delay before starting the probe
-            periodSeconds: 5  # Frequency of the probe
-            timeoutSeconds: 5  # Timeout for each probe
-            failureThreshold: 3  # Number of failed probes before considering the container not ready
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 3
           env:
+            - name: token
+              valueFrom:
+                secretKeyRef:
+                  name: argocd-token
+                  key: token
             - name: BACKSTAGE_DB_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: postgresql
                   key: password
-            # Add other environment variables as needed
+            - name: GITHUB_PERSONAL_ACCESS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: github-pat
+                  key: token
+            - name: GITHUB_OAUTH_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: github-oauth
+                  key: clientId
+            - name: GITHUB_OAUTH_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: github-oauth
+                  key: clientSecret
