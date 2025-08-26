@@ -1,6 +1,8 @@
+import os
 from fastapi import FastAPI
 
-app = FastAPI(title="{{ name }}")
+service_name = os.getenv("SERVICE_NAME", "Backstage Microservice")
+app = FastAPI(title=service_name)
 
 # Root endpoint
 @app.get("/")
