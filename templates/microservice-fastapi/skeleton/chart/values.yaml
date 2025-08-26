@@ -3,7 +3,7 @@ name: backstage
 ghOrg: vpydikondala
 host: backstage.local  # Your domain or localhost
 
-replicaCount: 1
+replicaCount: 2
 
 image:
   repository: ghcr.io/vpydikondala/backstage

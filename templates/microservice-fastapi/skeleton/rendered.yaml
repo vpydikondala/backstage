@@ -1,27 +1,41 @@
+---
+# Source: backstage/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: backstage-backstage
+spec:
+  selector:
+    app: backstage
+  ports:
+    - name: http
+      port: 80
+      targetPort: 7007
+  type: ClusterIP
+---
+# Source: backstage/templates/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "backstage.fullname" . }}
+  name: backstage-backstage
   labels:
-    app: {{ include "backstage.name" . }}
+    app: backstage
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: 1
   selector:
     matchLabels:
-      app: {{ include "backstage.name" . }}
+      app: backstage
   template:
     metadata:
       labels:
-        app: {{ include "backstage.name" . }}
+        app: backstage
     spec:
-      {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
-        {{- toYaml .Values.imagePullSecrets | nindent 8 }}
-      {{- end }}
+        - name: ghcr-secret
       containers:
         - name: backstage
-          image: {{ .Values.image.repository }}:{{ .Values.image.tag | default "latest" }}
-          imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
+          image: ghcr.io/vpydikondala/backstage:latest
+          imagePullPolicy: IfNotPresent
           command:
             - uvicorn
             - app.main:app
@@ -73,3 +87,22 @@ spec:
                 secretKeyRef:
                   name: github-oauth
                   key: clientSecret
+---
+# Source: backstage/templates/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: backstage-backstage
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: "backstage.local"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: backstage-backstage
+                port:
+                  number: 80
