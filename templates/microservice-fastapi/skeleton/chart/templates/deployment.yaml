@@ -16,16 +16,40 @@ spec:
     spec:
       {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
-      {{- toYaml .Values.imagePullSecrets | nindent 8 }}
+        {{- toYaml .Values.imagePullSecrets | nindent 8 }}
       {{- end }}
       containers:
-        - name: {{ include "backstage.name" . }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+        - name: backstage
+          image: ghcr.io/vpydikondala/backstage:latest
+          command:
+            - "uvicorn"
+            - "app.main:app"
+            - "--host"
+            - "0.0.0.0"
+            - "--port"
+            - "7007"
           ports:
-            - containerPort: {{ .Values.service.targetPort }}
+            - containerPort: 7007
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 7007
+            initialDelaySeconds: 30  # Delay before starting the probe
+            periodSeconds: 10  # Frequency of the probe
+            timeoutSeconds: 5  # Timeout for each probe
+            failureThreshold: 3  # Number of failed probes before the container is considered unhealthy
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 7007
+            initialDelaySeconds: 5  # Delay before starting the probe
+            periodSeconds: 5  # Frequency of the probe
+            timeoutSeconds: 5  # Timeout for each probe
+            failureThreshold: 3  # Number of failed probes before considering the container not ready
           env:
-            {{- if .Values.backstage.extraEnvVars }}
-            {{- toYaml .Values.backstage.extraEnvVars | nindent 12 }}
-            {{- end }}
-          args: ["yarn", "start"]
+            - name: BACKSTAGE_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql
+                  key: password
+            # Add other environment variables as needed
