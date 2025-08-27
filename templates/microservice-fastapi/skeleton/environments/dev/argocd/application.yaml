@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/vpydikondala/BACKSTAGE.git   # <-- your Backstage repo
+    repoURL: https://github.com/vpydikondala/backstage.git   # <-- your Backstage repo
     targetRevision: main                                     # or your branch
     path: backstage                                          # folder that contains k8s.yaml
     directory:
