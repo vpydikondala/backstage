@@ -1,10 +1,15 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "backstage.fullname" . }}
+  name: {{ include "svc.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    backstage.io/kubernetes-id: {{ .Chart.Name }}
 spec:
   selector:
-    app: {{ include "backstage.name" . }}
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    backstage.io/kubernetes-id: {{ .Chart.Name }}
   ports:
     - name: http
       port: {{ .Values.service.port }}

@@ -29,47 +29,42 @@ auth:
   providers:
     github:
       development:
-        clientId: ${GITHUB_OAUTH_CLIENT_ID}
-        clientSecret: ${GITHUB_OAUTH_CLIENT_SECRET}
+        clientId: ${GITHUB_CLIENT_ID}
+        clientSecret: ${GITHUB_CLIENT_SECRET}
 
 techdocs:
-  builder: 'local'
+  builder: local
   publisher:
-    type: 'local'
+    type: local
 
 catalog:
   rules:
-    - allow: [Component, API, Location, Resource, System, Domain, Group, User]
+    - allow: [Component, System, Domain, Group, User, API, Resource, Location, Template]
   locations:
-    - type: url
-      target: https://github.com/vpydikondala?type=all
-      rules:
-        - allow: [Component, System, Resource, API]
+    # 1) local org/system/groups
+    - type: file
+      target: ./catalog
+    # 2) your templates
     - type: file
       target: ./templates
+    # 3) auto-discover all catalog-info.yaml in your GitHub org/user
+    - type: github-discovery
+      target: https://github.com/vpydikondala/*
 
 kubernetes:
   serviceLocatorMethod:
-    type: 'multiTenant'
+    type: multiTenant
   clusterLocatorMethods:
-    - type: 'config'
+    - type: config
       clusters:
         - name: minikube
           url: https://kubernetes.default.svc
-          authProvider: 'serviceAccount'
+          authProvider: serviceAccount
           skipTLSVerify: true
-  customResources: []
 
-proxy:
-  '/argocd/api':
-    target: http://argocd-server.argocd.svc.cluster.local/api/v1/
-    changeOrigin: true
-    secure: false
-    headers:
-      Cookie:
-        $env: token
-
+# Optional: Argo CD plugin (remove if you don’t need the Argo card)
 argocd:
   baseUrl: http://argocd-server.argocd.svc.cluster.local
   appLocatorMethods:
-    - type: 'annotations'
+    - type: annotations
+  token: ${ARGOCD_TOKEN}

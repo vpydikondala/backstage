@@ -1,0 +1,28 @@
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: team-product
+  description: Product Team
+spec:
+  type: team
+  profile:
+    displayName: Team Product
+    email: team-product@example.com
+  children: []
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: product-platform
+  description: Platform of product services
+spec:
+  owner: group:team-product
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Domain
+metadata:
+  name: commerce
+spec:
+  owner: group:team-product

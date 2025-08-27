@@ -1,48 +1,29 @@
-name: CI/CD
-
+name: ci
 on:
   push:
-    branches:
-      - main
-  pull_request:
-
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ghcr.io/vpydikondala/backstage
-  CHART_PATH: templates/microservice-fastapi/chart
-
+    branches: [main]
 jobs:
-  build-and-push:
+  build:
     runs-on: ubuntu-latest
+    permissions: { contents: write, packages: write }
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v4
+      - uses: docker/build-push-action@v6
         with:
           context: .
-          file: Dockerfile
           push: true
-          tags: ${{ env.IMAGE_NAME }}:latest
-
-      - name: Install Helm
-        uses: azure/setup-helm@v3
-
-      - name: Deploy to Kubernetes via ArgoCD CLI
-        env:
-          ARGOCD_SERVER: argocd-server.argocd.svc.cluster.local
-          ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_TOKEN }}
+          tags: ghcr.io/${{ github.repository }}:latest
+      - name: Bump chart image tag
         run: |
-          argocd login $ARGOCD_SERVER --auth-token $ARGOCD_AUTH_TOKEN --insecure
-          argocd app sync backstage
+          sed -i 's#^  tag:.*#  tag: latest#' chart/values.yaml
+          git config user.email "actions@github.com"
+          git config user.name "github-actions"
+          git add chart/values.yaml
+          git commit -m "CI: bump image tag" || true
+          git push

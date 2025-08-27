@@ -1,74 +1,21 @@
-# Basic app info
-name: backstage
-ghOrg: vpydikondala
-host: backstage.local  # Your domain or localhost
-
 replicaCount: 1
 
 image:
-  repository: ghcr.io/vpydikondala/backstage
+  repository: ghcr.io/{{ ghOrg }}/{{ name }}
   tag: latest
   pullPolicy: IfNotPresent
 
-imagePullSecrets: 
-  - name: ghcr-secret
+imagePullSecrets: []   # e.g. - name: ghcr-creds
 
 service:
   port: 80
-  targetPort: 7007  # Backstage backend port
+  targetPort: 7007
 
 ingress:
   enabled: true
   className: nginx
   hosts:
-    - host: backstage.local
+    - host: {{ host }}
       paths:
         - path: /
           pathType: Prefix
-
-backstage:
-  extraEnvVars:
-    - name: token
-      valueFrom:
-        secretKeyRef:
-          name: argocd-token   # Kubernetes Secret for Argo CD token
-          key: token
-
-    - name: BACKSTAGE_DB_PASSWORD
-      valueFrom:
-        secretKeyRef:
-          name: postgresql
-          key: password
-
-    - name: GITHUB_PERSONAL_ACCESS_TOKEN
-      valueFrom:
-        secretKeyRef:
-          name: github-pat
-          key: token
-
-    - name: GITHUB_OAUTH_CLIENT_ID
-      valueFrom:
-        secretKeyRef:
-          name: github-oauth
-          key: clientId
-
-    - name: GITHUB_OAUTH_CLIENT_SECRET
-      valueFrom:
-        secretKeyRef:
-          name: github-oauth
-          key: clientSecret
-
-appConfig:
-  app:
-    baseUrl: http://backstage.local
-  backend:
-    baseUrl: http://backstage.local
-    listen:
-      port: 7007
-    database:
-      client: pg
-      connection:
-        host: postgresql.backstage.svc.cluster.local
-        user: backstage
-        password: postgresql
-        database: backstage

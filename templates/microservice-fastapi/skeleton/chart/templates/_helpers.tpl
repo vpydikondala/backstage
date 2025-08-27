@@ -9,3 +9,7 @@
 {{- define "backstage.chart" -}}
 {{ .Chart.Name }}-{{ .Chart.Version }}
 {{- end }}
+
+{{- define "svc.name" -}}{{ .Chart.Name }}{{- end -}}
+{{- define "svc.fullname" -}}{{ .Chart.Name | trunc 63 | trimSuffix "-" -}}{{- end -}}
+

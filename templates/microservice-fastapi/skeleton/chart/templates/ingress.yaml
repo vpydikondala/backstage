@@ -2,7 +2,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ include "backstage.fullname" . }}
+  name: {{ include "svc.fullname" . }}
 spec:
   {{- with .Values.ingress.className }}
   ingressClassName: {{ . }}
@@ -17,7 +17,7 @@ spec:
             pathType: {{ $p.pathType | default "Prefix" }}
             backend:
               service:
-                name: {{ include "backstage.fullname" $ }}
+                name: {{ include "svc.fullname" $ }}
                 port:
                   number: {{ $.Values.service.port }}
           {{- end }}
