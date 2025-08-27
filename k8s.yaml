@@ -49,9 +49,11 @@ spec:
         app: backstage
     spec:
       serviceAccountName: backstage
+      imagePullSecrets:
+      - name: ghcr-creds
       containers:
       - name: backstage
-        image: backstage-poc:latest   # build this against minikube’s docker
+        image: ghcr.io/vpydikondala/backstage:latest   # build this against minikube’s docker
         imagePullPolicy: IfNotPresent
         env:
         - name: BACKSTAGE_DB_PASSWORD
