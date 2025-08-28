@@ -5,7 +5,8 @@ image:
   tag: latest
   pullPolicy: IfNotPresent
 
-imagePullSecrets: []   # e.g. - name: ghcr-creds
+imagePullSecrets:
+  - name: ghcr-secret   # e.g. - name: ghcr-creds
 
 service:
   port: 80
