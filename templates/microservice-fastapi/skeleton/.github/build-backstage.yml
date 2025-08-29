@@ -1,0 +1,57 @@
+name: Build & Push Backstage (GHCR)
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'packages/**'
+      - 'app-config*.yaml'
+      - '.yarn/**'
+      - 'package.json'
+      - 'yarn.lock'
+      - 'Dockerfile.backstage'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Cache Yarn tarballs
+        uses: actions/cache@v4
+        with:
+          path: .yarn/cache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+
+      - name: Install deps (immutable)
+        run: yarn install --immutable
+
+      - name: Build backend bundle
+        run: yarn --cwd packages/backend build
+
+      # (We’ll reuse the Dockerfile.backstage you already created)
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & Push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.backstage
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/backstage-ui:latest
+            ghcr.io/${{ github.repository_owner }}/backstage-ui:${{ github.sha }}
