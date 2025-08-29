@@ -1,0 +1,33 @@
+# argocd-values.yaml — tuned for minikube
+## Use GHCR for Argo CD images (avoids quay issues)
+global:
+  image:
+    repository: ghcr.io/argoproj/argo-cd
+    tag: v2.10.8
+    imagePullPolicy: IfNotPresent
+
+## Keep it simple (non-HA) for local dev
+redis:
+  enabled: true
+  image:
+    repository: docker.io/redis
+    tag: "7.2-alpine"
+    pullPolicy: IfNotPresent
+  master:
+    persistence:
+      enabled: false
+
+controller:
+  replicas: 1
+repoServer:
+  replicas: 1
+server:
+  replicas: 1
+  service:
+    type: ClusterIP   # we’ll port-forward locally
+applicationSet:
+  replicaCount: 1
+notifications:
+  enabled: true
+dex:
+  enabled: true
