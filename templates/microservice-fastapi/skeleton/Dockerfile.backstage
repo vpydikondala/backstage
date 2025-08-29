@@ -1,20 +1,41 @@
-# Use official Python slim image
-FROM python:3.11-slim
-
-# Set working directory
+# -------- Build stage --------
+FROM node:20-bookworm-slim AS build
 WORKDIR /app
 
-# Copy only requirements first to leverage Docker cache
-COPY requirements.txt .
+# Copy Yarn (project-local), lockfile, workspace sources
+COPY .yarn ./.yarn
+COPY .yarnrc.yml package.json yarn.lock ./
+COPY packages ./packages
+COPY app-config*.yaml ./
 
-# Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Use the local Yarn CLI (NOTE: not prefixed with YARN_ to avoid config override)
+ENV LOCAL_YARN=/app/.yarn/releases/yarn-4.4.1.cjs
 
-# Copy application code
-COPY ./app /app/app
+# Force Yarn to use npmjs (avoids registry.yarnpkg.com DNS)
+ARG NPM_REG=https://registry.npmjs.org
+ENV YARN_NPM_REGISTRY_SERVER=$NPM_REG
 
-# Expose port 7007 (same as your FastAPI app)
+# Optional proxy support (pass as --build-arg if needed)
+ARG HTTP_PROXY
+ARG HTTPS_PROXY
+ENV HTTP_PROXY=$HTTP_PROXY
+ENV HTTPS_PROXY=$HTTPS_PROXY
+
+# Install deps & build backend bundle
+# (No corepack; run Yarn via node using the project-local CLI)
+RUN --mount=type=cache,target=/usr/local/share/.cache/yarn \
+    node $LOCAL_YARN install --immutable --inline-builds
+RUN node $LOCAL_YARN --cwd packages/backend build
+
+# -------- Runtime stage --------
+FROM node:20-bookworm-slim
+WORKDIR /app
+
+# Copy the built backend bundle and config
+COPY --from=build /app/packages/backend/dist/bundle.tar.gz ./
+RUN tar xzf bundle.tar.gz && rm bundle.tar.gz
+COPY --from=build /app/app-config*.yaml ./
+
+ENV NODE_ENV=production
 EXPOSE 7007
-
-# Default command to run the app with uvicorn
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "7007"]
+CMD ["node", "packages/backend", "--config", "app-config.yaml"]

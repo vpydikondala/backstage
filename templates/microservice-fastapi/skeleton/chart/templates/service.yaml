@@ -1,17 +1,15 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "svc.fullname" . }}
+  name: {{ include "backstage.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/name: {{ .Chart.Name }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    backstage.io/kubernetes-id: {{ .Chart.Name }}
+    {{- include "backstage.labels" . | nindent 4 }}
 spec:
+  type: {{ .Values.service.type }}
   selector:
-    app.kubernetes.io/name: {{ .Chart.Name }}
-    backstage.io/kubernetes-id: {{ .Chart.Name }}
+    app: {{ include "backstage.name" . }}
   ports:
     - name: http
       port: {{ .Values.service.port }}
       targetPort: {{ .Values.service.targetPort }}
-  type: ClusterIP

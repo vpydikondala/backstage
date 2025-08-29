@@ -1,5 +1,6 @@
 apiVersion: v2
-name: backstage-app
+name: backstage
+description: Backstage IDP (Helm-managed)
+type: application
 version: 0.1.0
-appVersion: "0.1.0"
-
+appVersion: "1.0.0"

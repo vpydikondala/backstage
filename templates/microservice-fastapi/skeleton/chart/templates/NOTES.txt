@@ -1,0 +1,4 @@
+Backstage URL:
+{{- range .Values.ingress.hosts }}
+  http://{{ .host }}/
+{{- end }}
