@@ -1,34 +1,33 @@
-# argocd-values.yaml — tuned for minikube
-## Use GHCR for Argo CD images (avoids quay issues)
+# Force the chart to use quay.io for ALL Argo CD containers (and initContainers like copyutil)
 global:
   image:
-   # repository: ghcr.io/argoproj/argo-cd
     repository: quay.io/argoproj/argocd
     tag: v2.10.8
     imagePullPolicy: IfNotPresent
 
-## Keep it simple (non-HA) for local dev
+# (Not strictly required when global.* is set, but we pin for clarity)
+controller:
+  image:
+    repository: quay.io/argoproj/argocd
+    tag: v2.10.8
+
+repoServer:
+  image:
+    repository: quay.io/argoproj/argocd
+    tag: v2.10.8
+
+server:
+  image:
+    repository: quay.io/argoproj/argocd
+    tag: v2.10.8
+
+# Dex & Redis (use known-good registries you’ve already preloaded)
+dex:
+  image:
+    repository: ghcr.io/dexidp/dex
+    tag: v2.43.1
+
 redis:
-  enabled: true
   image:
     repository: docker.io/redis
-    tag: "7.2-alpine"
-    pullPolicy: IfNotPresent
-  master:
-    persistence:
-      enabled: false
-
-controller:
-  replicas: 1
-repoServer:
-  replicas: 1
-server:
-  replicas: 1
-  service:
-    type: ClusterIP   # we’ll port-forward locally
-applicationSet:
-  replicaCount: 1
-notifications:
-  enabled: true
-dex:
-  enabled: true
+    tag: 7.2-alpine
