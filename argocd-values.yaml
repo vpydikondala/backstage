@@ -2,7 +2,8 @@
 ## Use GHCR for Argo CD images (avoids quay issues)
 global:
   image:
-    repository: ghcr.io/argoproj/argo-cd
+   # repository: ghcr.io/argoproj/argo-cd
+    repository: quay.io/argoproj/argocd
     tag: v2.10.8
     imagePullPolicy: IfNotPresent
 
