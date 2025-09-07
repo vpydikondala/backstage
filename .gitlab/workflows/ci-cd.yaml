@@ -1,0 +1,54 @@
+name: Build & Deploy Backstage
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Azure Login
+      uses: azure/login@v2
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Docker login to ACR
+      run: |
+        echo ${{ secrets.REGISTRY_PASSWORD }} | docker login ${{ secrets.ACR_LOGIN_SERVER }} --username ${{ secrets.REGISTRY_USERNAME }} --password-stdin
+
+    - name: Build Docker image
+      run: |
+        docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/backstage:latest .
+
+    - name: Push Docker image to ACR
+      run: |
+        docker push ${{ secrets.ACR_LOGIN_SERVER }}/backstage:latest
+
+    - name: Install yq (YAML processor)
+      run: |
+        sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq
+        sudo chmod +x /usr/bin/yq
+
+    - name: Update GitOps values.yaml with latest image tag
+      run: |
+        git clone https://github.com/yourorg/gitops-repo.git gitops
+        cd gitops
+        yq eval '.backend.image.tag = "latest"' -i values.yaml
+        git config user.name "github-actions"
+        git config user.email "actions@github.com"
+        git commit -am "Update Backstage image tag to latest"
+        git push https://x-access-token:${{ secrets.GITOPS_TOKEN }}@github.com/yourorg/gitops-repo.git main
+
+    - name: Trigger Argo CD Sync for Backstage app
+      run: |
+        # Replace <LOAD_BALANCER_IP_OR_DNS> with your actual ArgoCD server URL or IP and port
+        argocd login <LOAD_BALANCER_IP_OR_DNS> --username admin --password ${{ secrets.ARGOCD_ADMIN_PASSWORD }} --insecure
+        argocd app sync backstage-app

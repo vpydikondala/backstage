@@ -1,0 +1,24 @@
+# Node.js dependencies and logs
+node_modules/
+yarn-error.log
+
+# Build outputs
+dist/
+build/
+
+# Terraform local files
+.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+*.tfstate.lock.info
+
+# Kubernetes config or sensitive files (optional)
+.kube/
+
+# Docker images/build cache (optional)
+docker-compose.override.yml
+
+# IDE/editor files
+.vscode/
+.idea/
+.DS_Store

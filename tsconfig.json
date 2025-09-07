@@ -1,0 +1,4 @@
+{
+  "extends": "@backstage/tsconfig/tsconfig.json",
+  "include": ["packages/**/*"]
+}
