@@ -96,7 +96,7 @@ resource "kubernetes_service" "argocd_server" {
     }
 
   }
-az get context
+#az get context
   spec {
     type = "LoadBalancer"
 
