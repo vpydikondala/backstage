@@ -6,7 +6,7 @@ provider "azurerm" {
 # Resource Group
 # --------------------------
 resource "azurerm_resource_group" "rg" {
-  name     = "rg-backstage"
+  name     = var.resource_group_name
   location = var.location
 }
 
@@ -14,10 +14,10 @@ resource "azurerm_resource_group" "rg" {
 # Azure Kubernetes Service
 # --------------------------
 resource "azurerm_kubernetes_cluster" "aks" {
-  name                = "aks-backstage"
+  name                = var.aks_cluster_name
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
-
+  dns_prefix = "backstageaks"
   default_node_pool {
     name       = "agentpool"
     node_count = var.node_count
@@ -53,12 +53,12 @@ output "kubeconfig" {
 # --------------------------
 provider "helm" {
   kubernetes {
-    host                   = azurerm_kubernetes_cluster.aks.kube_config.0.host
-    client_certificate     = base64decode(azurerm_kubernetes_cluster.aks.kube_config.0.client_certificate)
-    client_key             = base64decode(azurerm_kubernetes_cluster.aks.kube_config.0.client_key)
-    cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.aks.kube_config.0.cluster_ca_certificate)
+    config_path = "~/.kube/config"  # or you can provide `config` or `config_raw` inline
+
+    # OR for inline config, specify `host`, `client_certificate`, etc as flat arguments under `kubernetes` block 
   }
 }
+
 
 # --------------------------
 # Kubernetes Provider
