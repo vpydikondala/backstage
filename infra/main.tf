@@ -1,5 +1,6 @@
 provider "azurerm" {
   features {}
+  subscription_id = "4f537747-a9bb-4132-b2c6-3e62394ce9f6"
 }
 
 # --------------------------
@@ -52,10 +53,13 @@ output "kubeconfig" {
 # Helm & Kubernetes Providers
 # --------------------------
 provider "helm" {
-  kubeconfig = azurerm_kubernetes_cluster.aks.kube_config[0].raw_kube_config
+  kubernetes = {
+    host                   = azurerm_kubernetes_cluster.aks.kube_config[0].host
+    client_certificate     = base64decode(azurerm_kubernetes_cluster.aks.kube_config[0].client_certificate)
+    client_key             = base64decode(azurerm_kubernetes_cluster.aks.kube_config[0].client_key)
+    cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.aks.kube_config[0].cluster_ca_certificate)
+  }
 }
-
-
 
 # --------------------------
 # Kubernetes Provider
@@ -90,8 +94,9 @@ resource "kubernetes_service" "argocd_server" {
     labels = {
       "app.kubernetes.io/name" = "argocd-server"
     }
-  }
 
+  }
+az get context
   spec {
     type = "LoadBalancer"
 
