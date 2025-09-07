@@ -52,12 +52,9 @@ output "kubeconfig" {
 # Helm & Kubernetes Providers
 # --------------------------
 provider "helm" {
-  kubernetes {
-    config_path = "~/.kube/config"  # or you can provide `config` or `config_raw` inline
-
-    # OR for inline config, specify `host`, `client_certificate`, etc as flat arguments under `kubernetes` block 
-  }
+  kubeconfig = azurerm_kubernetes_cluster.aks.kube_config[0].raw_kube_config
 }
+
 
 
 # --------------------------
@@ -91,7 +88,7 @@ resource "kubernetes_service" "argocd_server" {
     name      = "argocd-server"
     namespace = "argocd"
     labels = {
-      app.kubernetes.io/name = "argocd-server"
+      "app.kubernetes.io/name" = "argocd-server"
     }
   }
 
