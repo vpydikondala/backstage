@@ -1,19 +1,13 @@
 {
-  "name": "app",
-  "version": "1.0.0",
-  "private": true,
-  "main": "src/index.tsx",
-  "scripts": {
-    "start": "backstage-cli app:serve",
-    "build": "backstage-cli app:build"
-  },
   "dependencies": {
-    "@backstage/core-app-api": "^1.12.4",
-    "@backstage/core-components": "^0.14.4",
-    "@backstage/core-plugin-api": "^1.9.2",
-    "@backstage/plugin-catalog": "^1.19.0",
-    "@backstage/plugin-catalog-react": "^1.11.3",
-    "@backstage/plugin-search": "^1.4.10",
-    "@backstage/theme": "^0.5.3"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.22.3",
+    "@material-ui/core": "4.12.4",
+    "@material-ui/icons": "4.11.3"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.60",
+    "@types/react-dom": "^18.2.19"
   }
 }

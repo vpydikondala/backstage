@@ -1,15 +1,8 @@
 {
   "name": "backend",
-  "private": true,
-  "main": "dist/index.js",
-  "engines": {
-    "node": ">=18"
-  },
-  "scripts": {
-    "build": "backstage-cli backend:bundle --build-dependencies",
-    "start": "node dist/index.js"
-  },
+  "version": "1.0.0",
+  "main": "src/index.ts",
   "dependencies": {
-    "@backstage/backend-defaults": "^0.2.17"
+    "@backstage/backend-defaults": "^0.2.18"
   }
 }
