@@ -5,18 +5,9 @@ terraform {
   required_version = ">= 1.5.0"
 
   required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "~> 3.116"
-    }
-    kubernetes = {
-      source  = "hashicorp/kubernetes"
-      version = "~> 2.31"
-    }
-    helm = {
-      source  = "hashicorp/helm"
-      version = "~> 2.13"
-    }
+    azurerm   = { source = "hashicorp/azurerm",   version = "~> 3.116" }
+    kubernetes= { source = "hashicorp/kubernetes",version = "~> 2.31" }
+    helm      = { source = "hashicorp/helm",      version = "~> 2.13" }
   }
 }
 
@@ -25,20 +16,7 @@ provider "azurerm" {
 }
 
 ############################
-# Variables (set via tfvars or CI)
-############################
-variable "resource_group_name" { type = string }
-variable "location"            { type = string  default = "westeurope" }
-variable "aks_cluster_name"    { type = string }
-variable "dns_prefix"          { type = string  default = "backstageaks" }
-variable "node_count"          { type = number  default = 2 }
-variable "vm_size"             { type = string  default = "Standard_DS3_v2" }
-variable "acr_name"            { type = string }                   # e.g. "myacr"
-variable "backstage_image_tag" { type = string  default = "latest" } # set by CI (commit SHA) or keep "latest"
-variable "postgres_password"   { type = string  sensitive = true }   # choose a strong password
-
-############################
-# Resource Group, ACR, AKS
+# Azure resources: RG, ACR, AKS
 ############################
 resource "azurerm_resource_group" "rg" {
   name     = var.resource_group_name
@@ -53,29 +31,33 @@ resource "azurerm_container_registry" "acr" {
   admin_enabled       = true
 }
 
+# Discover latest stable AKS version for the location (no preview)
+data "azurerm_kubernetes_service_versions" "stable" {
+  location        = var.location
+  include_preview = false
+}
+
 resource "azurerm_kubernetes_cluster" "aks" {
   name                = var.aks_cluster_name
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
   dns_prefix          = var.dns_prefix
 
+  # Set cluster version to latest stable for the region
+  kubernetes_version = data.azurerm_kubernetes_service_versions.stable.latest_version
+
   default_node_pool {
-    name                = "system"
-    node_count          = var.node_count
-    vm_size             = var.vm_size
-    os_disk_size_gb     = 100
-    type                = "VirtualMachineScaleSets"
-    orchestrator_version = "1.29"
+    name            = "system"
+    node_count      = var.node_count
+    vm_size         = var.vm_size
+    os_disk_size_gb = 100
+    # NOTE: DO NOT set orchestrator_version here — that caused the downgrade error.
+    type            = "VirtualMachineScaleSets"
   }
 
   identity {
     type = "SystemAssigned"
   }
-
-  # (optional) network profile settings if you need Azure CNI, etc.
-  # network_profile {
-  #   network_plugin = "kubenet"
-  # }
 }
 
 # Allow AKS kubelet to pull from ACR
@@ -86,7 +68,7 @@ resource "azurerm_role_assignment" "aks_acr_pull" {
 }
 
 ############################
-# Kubernetes + Helm providers (use AKS kubeconfig)
+# Kubernetes + Helm Providers (use AKS kubeconfig)
 ############################
 provider "kubernetes" {
   host                   = azurerm_kubernetes_cluster.aks.kube_config[0].host
@@ -113,12 +95,11 @@ resource "helm_release" "ingress_nginx" {
   create_namespace = true
   repository       = "https://kubernetes.github.io/ingress-nginx"
   chart            = "ingress-nginx"
-  # version        = "4.11.3" # pin if you prefer
 
   depends_on = [azurerm_kubernetes_cluster.aks]
 }
 
-# Read its public IP for DNS-less hostnames (nip.io)
+# Read its external IP (for nip.io hostnames)
 data "kubernetes_service" "ingress_nginx_controller" {
   metadata {
     name      = "ingress-nginx-controller"
@@ -142,7 +123,6 @@ resource "helm_release" "argocd" {
   create_namespace = true
   repository       = "https://argoproj.github.io/argo-helm"
   chart            = "argo-cd"
-  # version        = "5.x.x"
 
   values = [
     yamlencode({
@@ -151,7 +131,7 @@ resource "helm_release" "argocd" {
         ingress = {
           enabled          = true
           ingressClassName = "nginx"
-          hosts            = [ local.argocd_host ]
+          hosts            = [ local.argocd_host ]    # Argo CD expects an array
           paths            = [ "/" ]
           annotations      = { "kubernetes.io/ingress.class" = "nginx" }
           tls              = []
@@ -164,33 +144,26 @@ resource "helm_release" "argocd" {
 }
 
 ############################
-# Backstage values (object -> yamlencode)
+# Backstage values (OBJECT -> yamlencode)
+# Matches Backstage chart schema
 ############################
 locals {
   backstage_values = {
     containerPorts = { backend = 7007 }
 
     service = {
-      type       = "ClusterIP"
-      port       = 80
-      targetPort = 7007
+      type  = "ClusterIP"
+      ports = {
+        backend = 7007
+      }
     }
 
     ingress = {
-      enabled   = true
-      className = "nginx"
-      annotations = {
-        "kubernetes.io/ingress.class" = "nginx"
-      }
-      hosts = [
-        {
-          host  = local.backstage_host
-          paths = [
-            { path = "/", pathType = "Prefix" }
-          ]
-        }
-      ]
-      tls = []
+      enabled    = true
+      className  = "nginx"
+      annotations= { "kubernetes.io/ingress.class" = "nginx" }
+      host       = local.backstage_host
+      tls        = { enabled = false, secretName = "" }
     }
 
     appConfig = {
@@ -199,8 +172,8 @@ locals {
         baseUrl = "http://${local.backstage_host}"
       }
       backend = {
-        baseUrl = "http://${local.backstage_host}/api"
-        listen  = { host = "0.0.0.0", port = 7007, basePath = "/api" }
+        baseUrl = "http://${local.backstage_host}"
+        listen  = { host = "0.0.0.0", port = 7007 }
         cors    = {
           origin      = "http://${local.backstage_host}"
           methods     = ["GET","HEAD","PATCH","POST","PUT","DELETE"]
@@ -219,17 +192,15 @@ locals {
       }
     }
 
-    backend = {
-      image = {
-        repository = "${var.acr_name}.azurecr.io/backstage"
-        tag        = var.backstage_image_tag       # set by CI (commit SHA) or "latest"
-        pullPolicy = "IfNotPresent"
-      }
+    image = {
+      repository = "${var.acr_name}.azurecr.io/backstage"
+      tag        = var.backstage_image_tag
+      pullPolicy = "IfNotPresent"
     }
 
     postgresql = {
       enabled = true
-      auth = {
+      auth    = {
         username         = "backstage"
         password         = var.postgres_password
         postgresPassword = var.postgres_password
@@ -237,14 +208,11 @@ locals {
       }
     }
 
-    # ServiceAccount so K8s plugin can be RBAC'ed later
     serviceAccount = { create = true, name = "backstage" }
 
-    # Helpful env mirrors (optional)
     extraEnvVars = [
-      { name = "APP_CONFIG_app_baseUrl",         value = "http://${local.backstage_host}" },
-      { name = "APP_CONFIG_backend_baseUrl",     value = "http://${local.backstage_host}/api" },
-      { name = "APP_CONFIG_backend_cors_origin", value = "http://${local.backstage_host}" }
+      { name = "APP_CONFIG_app_baseUrl",     value = "http://${local.backstage_host}" },
+      { name = "APP_CONFIG_backend_baseUrl", value = "http://${local.backstage_host}" }
     ]
   }
 }
@@ -256,14 +224,11 @@ resource "helm_release" "backstage" {
   name             = "backstage"
   repository       = "https://backstage.github.io/charts"
   chart            = "backstage"
-  # version        = "1.x.x"
   namespace        = "backstage"
   create_namespace = true
   wait             = true
 
-  values = [
-    yamlencode(local.backstage_values)
-  ]
+  values = [ yamlencode(local.backstage_values) ]
 
   depends_on = [
     azurerm_kubernetes_cluster.aks,
@@ -276,8 +241,8 @@ resource "helm_release" "backstage" {
 # Outputs
 ############################
 output "kubeconfig_raw" {
-  value     = azurerm_kubernetes_cluster.aks.kube_config_raw
-  sensitive = true
+  value       = azurerm_kubernetes_cluster.aks.kube_config_raw
+  sensitive   = true
   description = "Use with kubectl if needed"
 }
 

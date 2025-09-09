@@ -1,63 +1,50 @@
+# helm-chart/values.tpl.yaml
+# Rendered by Terraform templatefile()
+
+# --- Service exposure via Ingress (NGINX) ---
+ingress:
+  enabled: true
+  # single host, not an array
+  host: "${backstage_host}"
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+  # object, not an array
+  tls:
+    enabled: false
+    secretName: ""   # set if you terminate TLS at the ingress (AKS + cert-manager etc.)
+
+# --- Kubernetes Service (schema uses 'ports' object) ---
 service:
   type: ClusterIP
   ports:
+    name: "http-backend"
     backend: 7007
+    targetPort: "backend"
 
-ingress:
-  enabled: true
-  className: nginx
-  annotations:
-    kubernetes.io/ingress.class: nginx
-  host: ${host}
-  tls: {}
+# --- Backstage container wiring ---
+backstage:
+  # name the container port 'backend' so targetPort above can reference it
+  containerPorts:
+    backend: 7007
+  # easiest way to keep Backstage baseUrls in sync with your ingress host
+  extraEnvVars:
+    - name: APP_CONFIG_app_baseUrl
+      value: "http://${backstage_host}"
+    - name: APP_CONFIG_backend_baseUrl
+      value: "http://${backstage_host}"
+    - name: APP_CONFIG_backend_cors_origin
+      value: "http://${backstage_host}"
 
-appConfig:
-  app:
-    baseUrl: "http://${host}"
-  backend:
-    baseUrl: "http://${host}/api"
-    listen:
-      port: 7007
-      host: 0.0.0.0
-      basePath: /api
-  database:
-    client: pg
-    connection:
-      host: backstage-postgresql
-      port: 5432
-      user: backstage
-      password: "@Th1sS5c4r5P2ssword!"
-      database: backstage
-  catalog:
-    locations:
-      - type: url
-        target: https://raw.githubusercontent.com/backstage/backstage/master/plugins/catalog-backend/examples/valid-component.yaml
-      - type: url
-        target: https://raw.githubusercontent.com/backstage/backstage/master/plugins/catalog-backend/examples/org.yaml
-      - type: url
-        target: https://raw.githubusercontent.com/backstage/backstage/master/plugins/catalog-backend/examples/template.yaml
+# --- Image coordinates (ACR) ---
+image:
+  repository: "${acr_name}.azurecr.io/backstage"
+  tag: "${image_tag}"
+  pullPolicy: IfNotPresent
 
-backend:
-  image:
-    repository: "${acr_name}.azurecr.io/backstage"
-    tag: latest
-    pullPolicy: IfNotPresent
-
+# --- Postgres managed by the chart (optional) ---
 postgresql:
   enabled: true
   auth:
     username: backstage
-    password: "@Th1sS5c4r5P2ssword!"
-    postgresPassword: "@Th1sS5c4r5P2ssword!"  # <-- ADD THIS
-   # adminPassword: "@Th1sS5c4r5P2ssword!"
+    password: "${pg_password}"
     database: backstage
-
-extraEnvVars:
-  - name: APP_CONFIG_app_baseUrl
-    value: "http://${host}"
-  - name: APP_CONFIG_backend_baseUrl
-    value: "http://${host}/api"
-  - name: APP_CONFIG_backend_cors_origin
-    value: "http://${host}"
-
-
