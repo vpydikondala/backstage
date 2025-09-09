@@ -1,0 +1,22 @@
+.git
+.gitignore
+node_modules
+**/node_modules
+packages/**/dist
+.cache
+.turbo
+.DS_Store
+*.log
+coverage
+.tmp
+.env
+.env.*
+.vscode
+.idea
+# Yarn/Turbo artifacts you don't need in the image
+.yarn/cache
+.yarn/unplugged
+.yarn/install-state.gz
+.pnp.*
+infra/.terraform
+infra/terraform.tfstate*

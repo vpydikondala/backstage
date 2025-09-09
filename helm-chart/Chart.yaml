@@ -1,5 +1,0 @@
-apiVersion: v2
-name: backstage
-description: Deploy Backstage using the official Helm chart
-type: application
-version: 0.1.0

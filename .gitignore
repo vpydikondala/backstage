@@ -1,24 +1,26 @@
-# Node.js dependencies and logs
+# Node/Yarn
 node_modules/
-yarn-error.log
-
-# Build outputs
-dist/
-build/
-
-# Terraform local files
-.terraform/
-terraform.tfstate
-terraform.tfstate.backup
-*.tfstate.lock.info
-
-# Kubernetes config or sensitive files (optional)
-.kube/
-
-# Docker images/build cache (optional)
-docker-compose.override.yml
-
-# IDE/editor files
-.vscode/
-.idea/
+**/node_modules/
+packages/**/dist/
+*.log
 .DS_Store
+.cache/
+.turbo/
+.pnp.*
+.yarn/cache/
+
+# Keep these Yarn files (override the line above)
+!.yarn/releases/**
+!.yarn/plugins/**
+!.yarn/sdks/**
+!.yarn/install-state.gz
+
+# Env
+.env
+.env.*
+
+# Terraform (local state & working dir)
+infra/.terraform/
+infra/terraform.tfstate
+infra/terraform.tfstate.*
+infra/crash.log

@@ -1,34 +1,10 @@
-variable "location" {
-  description = "Azure region"
-  type        = string
-  default     = "uksouth"
-}
+variable "resource_group_name" { type = string }
+variable "location"            { type = string  default = "westeurope" }
+variable "aks_cluster_name"    { type = string }
+variable "dns_prefix"          { type = string  default = "backstageaks" }
+variable "node_count"          { type = number  default = 2 }
+variable "vm_size"             { type = string  default = "Standard_DS3_v2" }
 
-variable "resource_group_name" {
-  description = "Resource group for AKS"
-  type        = string
-  default     = "rg-backstage"
-}
-
-variable "aks_cluster_name" {
-  description = "AKS cluster name"
-  type        = string
-  default     = "aks-backstage"
-}
-
-variable "node_count" {
-  description = "Number of AKS worker nodes"
-  type        = number
-  default     = 2
-}
-
-variable "vm_size" {
-  description = "Size of AKS VMs"
-  type        = string
-  default     = "Standard_DS2_v2"
-}
-
-variable "acr_name" {
-  description = "Azure Container Registry name (must be globally unique)"
-  type        = string
-}
+variable "acr_name"            { type = string }                 # e.g. "myacr"
+variable "backstage_image_tag" { type = string  default = "latest" }
+variable "postgres_password"   { type = string  sensitive = true }

@@ -1,0 +1,63 @@
+service:
+  type: ClusterIP
+  ports:
+    backend: 7007
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    kubernetes.io/ingress.class: nginx
+  host: ${host}
+  tls: {}
+
+appConfig:
+  app:
+    baseUrl: "http://${host}"
+  backend:
+    baseUrl: "http://${host}/api"
+    listen:
+      port: 7007
+      host: 0.0.0.0
+      basePath: /api
+  database:
+    client: pg
+    connection:
+      host: backstage-postgresql
+      port: 5432
+      user: backstage
+      password: "@Th1sS5c4r5P2ssword!"
+      database: backstage
+  catalog:
+    locations:
+      - type: url
+        target: https://raw.githubusercontent.com/backstage/backstage/master/plugins/catalog-backend/examples/valid-component.yaml
+      - type: url
+        target: https://raw.githubusercontent.com/backstage/backstage/master/plugins/catalog-backend/examples/org.yaml
+      - type: url
+        target: https://raw.githubusercontent.com/backstage/backstage/master/plugins/catalog-backend/examples/template.yaml
+
+backend:
+  image:
+    repository: "${acr_name}.azurecr.io/backstage"
+    tag: latest
+    pullPolicy: IfNotPresent
+
+postgresql:
+  enabled: true
+  auth:
+    username: backstage
+    password: "@Th1sS5c4r5P2ssword!"
+    postgresPassword: "@Th1sS5c4r5P2ssword!"  # <-- ADD THIS
+   # adminPassword: "@Th1sS5c4r5P2ssword!"
+    database: backstage
+
+extraEnvVars:
+  - name: APP_CONFIG_app_baseUrl
+    value: "http://${host}"
+  - name: APP_CONFIG_backend_baseUrl
+    value: "http://${host}/api"
+  - name: APP_CONFIG_backend_cors_origin
+    value: "http://${host}"
+
+
