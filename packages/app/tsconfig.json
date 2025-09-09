@@ -1,0 +1,4 @@
+{
+  "extends": "@backstage/tsconfig/tsconfig.frontend.json",
+  "include": ["src"]
+}

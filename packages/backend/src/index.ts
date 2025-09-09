@@ -1,6 +1,6 @@
-import app from './app';
+import backend from './app';
 
-app().catch(err => {
-  console.error('Backend failed to start:', err);
+backend.start().catch(err => {
+  console.error(err);
   process.exit(1);
 });
