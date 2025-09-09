@@ -1,35 +1,35 @@
-# ---------- build ----------
+# --- Build stage -------------------------------------------------------------
 FROM node:20-bullseye AS build
 WORKDIR /app
 
-# 1) Copy manifests first
-COPY package.json yarn.lock .npmrc .yarnrc.yml ./
+# Copy only manifests first (faster, better layer caching)
+COPY package.json yarn.lock .yarnrc.yml .npmrc ./
 COPY packages/backend/package.json packages/backend/
 COPY packages/app/package.json packages/app/
 
-# 2) Yarn 4 via Corepack
 RUN corepack enable && corepack prepare yarn@4.9.4 --activate
-ENV YARN_NPM_REGISTRY_SERVER=https://registry.npmjs.org
+RUN yarn --version && npm --version
 
-# 3) Install from lockfile
+# Install deps exactly as locked
 RUN yarn install --immutable
 
-# 4) Copy source & build (builds both app and backend)
+# Now copy the rest of the source
 COPY . .
-RUN yarn build
 
-# ---------- runtime ----------
-FROM node:20-bullseye
-WORKDIR /app
+# Type-check/compile
+RUN yarn tsc
+
+# Bundle the backend (adjust CLI version here to match your root devDep)
+RUN npx --yes @backstage/cli@0.26.11 backend:bundle --build-dependencies
+
+# --- Runtime stage -----------------------------------------------------------
+FROM node:20-slim
 ENV NODE_ENV=production
+WORKDIR /app
 
-# copy backend bundle + workspace production deps
+# Copy backend bundle and config
 COPY --from=build /app/packages/backend/dist ./packages/backend/dist
-COPY --from=build /app/packages/backend/package.json ./packages/backend/package.json
-COPY --from=build /app/yarn.lock ./yarn.lock
-
-RUN corepack enable && corepack prepare yarn@4.9.4 --activate \
-  && yarn workspaces focus --all --production
+COPY --from=build /app/app-config*.yaml ./
 
 EXPOSE 7007
-CMD ["node", "packages/backend/dist/index.js"]
+CMD ["node", "packages/backend/dist/bundle.cjs"]
