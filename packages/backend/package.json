@@ -2,25 +2,8 @@
   "name": "backend",
   "private": true,
   "version": "0.1.0",
-  "main": "dist/index.js",
-  "types": "src/index.ts",
-  "scripts": {
-    "build": "backstage-cli backend:bundle --build-dependencies",
-    "start": "node dist/index.js",
-    "tsc": "tsc -p tsconfig.json"
-  },
   "dependencies": {
-    "@backstage/backend-defaults": "0.2.18",
-    "@backstage/config": "1.1.1",
-    "@backstage/config-loader": "1.8.1",
-    "@backstage/integration": "1.10.0",
-    "@backstage/plugin-app-backend": "0.6.16",
-    "@backstage/plugin-auth-backend": "0.22.3",
-    "@backstage/plugin-catalog-backend": "1.24.1",
-    "@kubernetes/client-node": "1.0.0",
-    "better-sqlite3": "9.4.0",
-    "express": "4.19.2",
-    "pg": "8.11.3",
-    "winston": "3.11.0"
+    "@backstage/backend-defaults": "^0.12.0",
+    "@backstage/plugin-catalog-backend": "^1.20.0"
   }
 }

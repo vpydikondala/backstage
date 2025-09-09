@@ -1,4 +1,5 @@
 {
-  "extends": "@backstage/tsconfig/tsconfig.frontend.json",
-  "include": ["src"]
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": { "jsx": "react-jsx", "baseUrl": "." },
+  "include": ["src", "types"]
 }

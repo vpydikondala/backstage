@@ -1,12 +1,12 @@
+// packages/backend/src/index.ts
 import { createBackend } from '@backstage/backend-defaults';
 
-const backend = createBackend();
+async function main() {
+  const backend = createBackend();
+  await backend.start();  // uses standard service builder under the hood
+}
 
-// Minimal set; add more plugins as you need them
-backend.add(import('@backstage/plugin-app-backend'));
-backend.add(import('@backstage/plugin-auth-backend'));
-backend.add(import('@backstage/plugin-catalog-backend'));
-// Example, only if you plan to use K8s features
-// backend.add(import('@backstage/plugin-kubernetes-backend'));
-
-export default backend;
+main().catch(err => {
+  console.error(err);
+  process.exit(1);
+});

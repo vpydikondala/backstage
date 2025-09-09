@@ -1,16 +1,14 @@
 {
   "name": "backstage-monorepo",
   "private": true,
-  "workspaces": ["packages/*"],
+  "version": "0.1.0",
+  "workspaces": [
+    "packages/*"
+  ],
   "packageManager": "yarn@4.9.4",
-  "scripts": {
-    "build": "yarn --cwd packages/app build && yarn --cwd packages/backend build",
-    "start": "yarn --cwd packages/backend start",
-    "tsc": "tsc -b"
-  },
   "devDependencies": {
-    "@backstage/cli": "0.26.11",
-    "@backstage/tsconfig": "0.1.10",
-    "typescript": "5.4.5"
+    "@backstage/cli": "^0.26.11",
+    "typescript": "^5.6.3",
+    "webpack": "^5.94.0"
   }
 }

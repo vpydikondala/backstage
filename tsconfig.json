@@ -1,7 +1,23 @@
 {
-  "extends": "@backstage/tsconfig/tsconfig.json",
   "compilerOptions": {
-    "skipLibCheck": true
+    "target": "ES2019",
+    "module": "commonjs",
+    "lib": [
+      "ES2020"
+    ],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "outDir": "dist"
   },
-  "include": ["packages/*/src", "plugins/*/src"]
+  "include": [
+    "packages/*/src",
+    "plugins/*/src"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }
