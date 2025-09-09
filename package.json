@@ -2,7 +2,9 @@
   "name": "backstage-monorepo",
   "private": true,
   "packageManager": "yarn@4.9.4",
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "devDependencies": {
     "@backstage/cli": "^0.34.1",
     "typescript": "^5.4.0"
