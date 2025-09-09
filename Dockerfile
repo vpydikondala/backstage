@@ -2,22 +2,22 @@
 FROM node:18-bullseye AS build
 WORKDIR /app
 
-# 1) Copy only files needed for dependency install first for better caching
-COPY .yarnrc.yml ./
-COPY .yarn ./.yarn
-COPY package.json yarn.lock ./
+# Copy only what’s needed to install deps first
+COPY package.json yarn.lock .yarnrc.yml .npmrc ./
 COPY packages/backend/package.json packages/backend/
 COPY packages/app/package.json packages/app/
 
-# 2) Ensure corepack is enabled so Yarn v4 from .yarnrc.yml is used
-RUN corepack enable
-
-# 3) Install deps (Yarn v4 flags)
-#    Force npmjs registry in case .yarnrc.yml isn't honored in your env
+# Use Yarn v4 via Corepack, and ensure npmjs
+RUN corepack enable && corepack prepare yarn@4.9.4 --activate
 ENV YARN_NPM_REGISTRY_SERVER=https://registry.npmjs.org
-RUN yarn --version && yarn install --immutable
 
-# 4) Copy the rest of the source & build
+# Quick sanity: show Yarn & that the package exists
+RUN yarn --version && yarn npm view @backstage/backend-defaults version
+
+# Install dependencies (no network changes allowed)
+RUN yarn install --immutable
+
+# Now copy the rest and build
 COPY . .
 RUN yarn tsc
 RUN npx --yes @backstage/cli backend:bundle --build-dependencies
@@ -29,6 +29,7 @@ ENV NODE_ENV=production
 COPY --from=build /app/packages/backend/dist ./packages/backend/dist
 COPY --from=build /app/packages/backend/package.json ./packages/backend/package.json
 COPY --from=build /app/yarn.lock ./yarn.lock
-RUN corepack enable && yarn install --production --immutable --cwd packages/backend
+RUN corepack enable && corepack prepare yarn@4.9.4 --activate \
+ && yarn install --production --immutable --cwd packages/backend
 EXPOSE 7007
 CMD ["node", "packages/backend/dist/index.js"]
