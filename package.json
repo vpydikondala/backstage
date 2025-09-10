@@ -1,14 +1,15 @@
 {
-  "name": "backstage-monorepo",
-  "private": true,
-  "version": "0.1.0",
-  "workspaces": [
-    "packages/*"
-  ],
-  "packageManager": "yarn@4.9.4",
-  "devDependencies": {
-    "@backstage/cli": "^0.26.11",
-    "typescript": "^5.6.3",
-    "webpack": "^5.94.0"
+  "compilerOptions": {
+    "target": "ES2019",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "lib": ["ES2020"],
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "strict": true,
+    "types": ["node"],
+    "outDir": "dist",
+    "forceConsistentCasingInFileNames": true
   }
 }

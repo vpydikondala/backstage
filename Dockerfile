@@ -17,7 +17,7 @@ RUN yarn install --immutable
 COPY . .
 
 # Type-check/compile
-RUN yarn tsc
+RUN yarn tsc -p packages/backend/tsconfig.json
 
 # Bundle the backend (adjust CLI version here to match your root devDep)
 RUN npx --yes @backstage/cli@0.26.11 backend:bundle --build-dependencies
