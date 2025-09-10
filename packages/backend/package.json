@@ -4,6 +4,19 @@
     "composite": false,
     "outDir": "dist"
   },
-  "include": ["src"],
-  "exclude": ["**/*.test.ts", "node_modules", "dist"]
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "**/*.test.ts",
+    "node_modules",
+    "dist"
+  ],
+  "name": "backend",
+  "private": true,
+  "version": "0.1.0",
+  "dependencies": {
+    "@backstage/backend-defaults": "^0.12.0",
+    "@backstage/plugin-catalog-backend": "^1.20.0"
+  }
 }
