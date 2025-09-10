@@ -1,12 +1,7 @@
-// packages/backend/src/index.ts
 import { createBackend } from '@backstage/backend-defaults';
 
-async function main() {
+export default async function app() {
   const backend = createBackend();
-  await backend.start();  // uses standard service builder under the hood
+  // register plugins here as needed
+  return { backend };
 }
-
-main().catch(err => {
-  console.error(err);
-  process.exit(1);
-});
