@@ -17,6 +17,7 @@
     "forceConsistentCasingInFileNames": true
   },
   "devDependencies": {
-    "typescript": "5.6.3"
+    "@types/node": "^20",
+    "typescript": "^5.6.3"
   }
 }
